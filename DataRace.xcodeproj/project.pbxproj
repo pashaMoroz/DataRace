@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		632124482B06545700AFDADF /* DataRaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124472B06545700AFDADF /* DataRaceApp.swift */; };
-		6321244A2B06545700AFDADF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124492B06545700AFDADF /* ContentView.swift */; };
 		6321244C2B06545900AFDADF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6321244B2B06545900AFDADF /* Assets.xcassets */; };
 		6321244F2B06545900AFDADF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6321244E2B06545900AFDADF /* Preview Assets.xcassets */; };
 		632124592B06545900AFDADF /* DataRaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124582B06545900AFDADF /* DataRaceTests.swift */; };
 		632124632B06545900AFDADF /* DataRaceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124622B06545900AFDADF /* DataRaceUITests.swift */; };
 		632124652B06545900AFDADF /* DataRaceUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124642B06545900AFDADF /* DataRaceUITestsLaunchTests.swift */; };
+		632124742B06549700AFDADF /* DataRaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124712B06549700AFDADF /* DataRaceView.swift */; };
+		632124752B06549700AFDADF /* MainActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124722B06549700AFDADF /* MainActorView.swift */; };
+		632124762B06549700AFDADF /* MainGlobalActorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632124732B06549700AFDADF /* MainGlobalActorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,7 +38,6 @@
 /* Begin PBXFileReference section */
 		632124442B06545700AFDADF /* DataRace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DataRace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		632124472B06545700AFDADF /* DataRaceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRaceApp.swift; sourceTree = "<group>"; };
-		632124492B06545700AFDADF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6321244B2B06545900AFDADF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6321244E2B06545900AFDADF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		632124542B06545900AFDADF /* DataRaceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DataRaceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +45,9 @@
 		6321245E2B06545900AFDADF /* DataRaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DataRaceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		632124622B06545900AFDADF /* DataRaceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRaceUITests.swift; sourceTree = "<group>"; };
 		632124642B06545900AFDADF /* DataRaceUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRaceUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		632124712B06549700AFDADF /* DataRaceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataRaceView.swift; sourceTree = "<group>"; };
+		632124722B06549700AFDADF /* MainActorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainActorView.swift; sourceTree = "<group>"; };
+		632124732B06549700AFDADF /* MainGlobalActorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainGlobalActorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,7 +99,9 @@
 			isa = PBXGroup;
 			children = (
 				632124472B06545700AFDADF /* DataRaceApp.swift */,
-				632124492B06545700AFDADF /* ContentView.swift */,
+				632124712B06549700AFDADF /* DataRaceView.swift */,
+				632124722B06549700AFDADF /* MainActorView.swift */,
+				632124732B06549700AFDADF /* MainGlobalActorView.swift */,
 				6321244B2B06545900AFDADF /* Assets.xcassets */,
 				6321244D2B06545900AFDADF /* Preview Content */,
 			);
@@ -257,8 +263,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6321244A2B06545700AFDADF /* ContentView.swift in Sources */,
 				632124482B06545700AFDADF /* DataRaceApp.swift in Sources */,
+				632124762B06549700AFDADF /* MainGlobalActorView.swift in Sources */,
+				632124742B06549700AFDADF /* DataRaceView.swift in Sources */,
+				632124752B06549700AFDADF /* MainActorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

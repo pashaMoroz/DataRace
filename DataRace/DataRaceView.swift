@@ -5,9 +5,10 @@
 //  Created by Moroz Pavlo on 2023-11-15.
 //
 
+
 import SwiftUI
 
-
+//This service should be an actor instead of a class. Alternatively, its methods that modify its state should be annotated with a custom global actor, similar to how it's done in MainGlobalActorView. Otherwise, the service will not function correctly and may lead to data race.
 class BankDataRaceService {
     
     enum WalletError: Error {
@@ -15,122 +16,133 @@ class BankDataRaceService {
         case cannotFetchWalletBalance
     }
     
-    private(set) var wallet: Int?
+    @AppStorage("classWallet") private(set) var wallet: Int?
     
-    func addMoneyToWallet(sum: Int) throws -> Int {
+    func addMoneyToWallet(sum: Int) async throws -> Int {
+        
+        try? await Task.sleep(nanoseconds: internetSpeed)
+        
         guard var currentWallet = wallet else { throw WalletError.noWallet }
+        
         currentWallet += sum
+        print("============================================")
+        print("DEBUG wallet was: \(String(describing: wallet))")
         wallet = currentWallet
+        print("DEBUG currentWallet after add money: \(currentWallet)")
+        print(print("DEBUG Thread.current: \(Thread.current)"))
+        
         return currentWallet
     }
     
-    func takeMoneyFromWallet(sum: Int) throws -> Int {
-        guard var currentWallet = wallet else { throw WalletError.noWallet }
-//        if currentWallet - sum < 0 {
-//            return currentWallet
-//        }
-        currentWallet -= sum
-        wallet = currentWallet
-        return currentWallet
-    }
     
     func fetchBalance() async throws -> Int? {
         
         print("DEBUG fetchBalance started")
-        try? await Task.sleep(nanoseconds: 500_000_000)
+        try? await Task.sleep(nanoseconds: internetSpeed)
         print("DEBUG fetchBalance finished")
         
         let successfulWalletFetch = Bool.random()
         
         if successfulWalletFetch {
-            wallet = 0 //set your balance here after mock fething
-            return wallet
+            if let walletValue = wallet {
+                return walletValue
+            } else {
+                wallet = 0 //set your balance here after mock fething
+                return wallet
+            }
         } else {
             throw WalletError.cannotFetchWalletBalance
         }
     }
+    
+    func resetWallet() async {
+        wallet = 0
+        let _ = try? await fetchBalance()
+    }
 }
-
 
 class DataRaceViewViewModel: ObservableObject {
     
     @Published var myBalance: Int?
+    @Published var transactionCount = 0
+    @Published var isLoadind = false
     
     var bankService = BankDataRaceService()
     
+    @MainActor
     func addToWallet(sum: Int) async   {
         do {
-            let myBalanceAfterAddedMoney = try bankService.addMoneyToWallet(sum: sum)
+            let myBalanceAfterAddedMoney = try await bankService.addMoneyToWallet(sum: sum)
             print("DEBUG myBalanceAfterAddedMoney: \(myBalanceAfterAddedMoney)")
-            await MainActor.run {
+                self.transactionCount += 1
                 self.myBalance = myBalanceAfterAddedMoney
-            }
         } catch {
             print("DEBUG addToWallet: \(error)")
         }
     }
     
-    func minusFromWallet(sum: Int) async {
-        do {
-            let myBalanceAfterMinusMoney = try bankService.takeMoneyFromWallet(sum: sum)
-            print("DEBUG myBalanceAfterMinusMoney: \(myBalanceAfterMinusMoney)")
-            await MainActor.run {
-                self.myBalance = myBalanceAfterMinusMoney
-            }
-        } catch {
-            print("DEBUG minusFromWallet: \(error)")
-        }
-    }
-    
+    @MainActor // We can mark func/class like @MainActor and all code in func will be run in main Thread. In can be useful for some cases. But be careful with closures!!
     func fetchBalance() async {
+            isLoadind = true
         do {
             let balance = try await bankService.fetchBalance()
             print("DEBUG fetchBalance SUCCSESS, balance: \(String(describing: balance))")
-            await MainActor.run {
+                isLoadind = false
                 myBalance = balance
-            }
         } catch {
+                myBalance = nil
+                isLoadind = false
             print("DEBUG fetchBalance ERROR : \(error)")
         }
+        
+    }
+    
+    func resetWallet() async {
+        await bankService.resetWallet()
+        await refresh()
+    }
+    
+    @MainActor
+    private func refresh() async{
+            self.transactionCount = 0
+            myBalance = bankService.wallet
     }
 }
 
 struct DataRaceView: View {
     
     @StateObject var viewModel = DataRaceViewViewModel()
+    @Binding var isResetWalletRequested: Bool
     
     var body: some View {
-        VStack {
-            Text("Your balance is: \(viewModel.myBalance != nil ? "\(String(describing: viewModel.myBalance!))" : "No info" )")
+        VStack(spacing: 50) {
+            Text("Total transaction: \(viewModel.transactionCount)")
             
-            Button("Refresh") {
-                Task {
-                    await viewModel.fetchBalance()
-                }
-            }
-            
-            HStack {
-                Button("Recive All Payments") {
-                    Task {
-                        for _ in 0...100 {
-                            await viewModel.addToWallet(sum: 100)
-                        }
-                    }
-                    
-                    Task {
-                        for _ in 0...100 {
-                            await viewModel.minusFromWallet(sum: 100)
-                        }
-                    }
-                }
+            if !viewModel.isLoadind {
+                Text("Your balance is: \(viewModel.myBalance != nil ? "\(String(describing: viewModel.myBalance!)) $" : "No info" )")
                 
-                Button("Send 100x Payments") {
+                Button(action: {
                     Task {
-                        for _ in 0...100 {
-                            await viewModel.minusFromWallet(sum: 100)
-                        }
+                        await viewModel.fetchBalance()
                     }
+                }, label: {
+                    RoundedRectangle(cornerRadius: 10)
+                        .frame(width: 200, height: 50)
+                        .foregroundStyle(.blue)
+                        .overlay {
+                            Text("Refresh")
+                                .foregroundStyle(.white)
+                        }
+                })
+                
+                HStack {
+                    Button("Recive All Payments") {
+                        startPayments()
+                    }
+                    .disabled(viewModel.myBalance == nil)
                 }
+            } else {
+                ProgressView()
             }
         }
         .onAppear {
@@ -138,9 +150,41 @@ struct DataRaceView: View {
                 await viewModel.fetchBalance()
             }
         }
+        .onChange(of: isResetWalletRequested) {
+            Task {
+               await viewModel.resetWallet()
+            }
+        }
+    }
+    
+    private func startPayments() {
+        //We call addToWallet in different Task {} for simusating 4 different background Threads.
+        Task {
+            for _ in 1...100 {
+                await viewModel.addToWallet(sum: 10)
+            }
+        }
+        
+        Task {
+            for _ in 1...100 {
+                await viewModel.addToWallet(sum: 10)
+            }
+        }
+        
+        Task {
+            for _ in 1...100 {
+                await viewModel.addToWallet(sum: 10)
+            }
+        }
+        
+        Task {
+            for _ in 1...100 {
+                await viewModel.addToWallet(sum: 10)
+            }
+        }
     }
 }
 
 #Preview {
-    DataRaceView()
+    DataRaceView(isResetWalletRequested: .constant(false))
 }
